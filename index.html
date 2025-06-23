@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Car Dodging Game</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #333;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    #score {
+      font-size: 24px;
+      color: white;
+      margin: 10px;
+    }
+
+    #game {
+      position: relative;
+      width: 300px;
+      height: 500px;
+      background: #444;
+      border: 4px solid white;
+      overflow: hidden;
+    }
+
+    #player {
+      position: absolute;
+      bottom: 20px;
+      left: 125px;
+      width: 50px;
+      height: 100px;
+      background: red;
+      border-radius: 10px;
+    }
+
+    .enemy {
+      position: absolute;
+      top: -100px;
+      width: 50px;
+      height: 100px;
+      background: yellow;
+      border-radius: 10px;
+    }
+
+    #controls {
+      margin-top: 10px;
+      display: none;
+      gap: 20px;
+    }
+
+    .btn {
+      background: white;
+      border: none;
+      padding: 15px 25px;
+      font-size: 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn:hover {
+      background: #ddd;
+    }
+
+    #toggleBtn {
+      margin: 15px;
+      padding: 10px 20px;
+      font-size: 18px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      background: cyan;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="score">Score: 0</div>
+  <button id="toggleBtn">Switch to Mobile Controls</button>
+
+  <div id="game">
+    <div id="player"></div>
+  </div>
+
+  <div id="controls">
+    <button class="btn" id="leftBtn">⬅️</button>
+    <button class="btn" id="rightBtn">➡️</button>
+  </div>
+
+  <script>
+    const player = document.getElementById('player');
+    const game = document.getElementById('game');
+    const scoreDisplay = document.getElementById('score');
+    const leftBtn = document.getElementById('leftBtn');
+    const rightBtn = document.getElementById('rightBtn');
+    const controls = document.getElementById('controls');
+    const toggleBtn = document.getElementById('toggleBtn');
+
+    let playerLeft = 125;
+    let score = 0;
+    let gameRunning = true;
+    let useMobileControls = false;
+
+    function movePlayerLeft() {
+      if (playerLeft > 0) {
+        playerLeft -= 25;
+        player.style.left = playerLeft + "px";
+      }
+    }
+
+    function movePlayerRight() {
+      if (playerLeft < 250) {
+        playerLeft += 25;
+        player.style.left = playerLeft + "px";
+      }
+    }
+
+    function handleKey(e) {
+      if (!gameRunning || useMobileControls) return;
+      const key = e.key.toLowerCase();
+      if (key === "a") movePlayerLeft();
+      if (key === "d") movePlayerRight();
+    }
+
+    document.addEventListener('keydown', handleKey);
+    leftBtn.addEventListener('click', movePlayerLeft);
+    rightBtn.addEventListener('click', movePlayerRight);
+
+    toggleBtn.addEventListener('click', () => {
+      useMobileControls = !useMobileControls;
+      controls.style.display = useMobileControls ? "flex" : "none";
+      toggleBtn.textContent = useMobileControls
+        ? "Switch to Keyboard Controls"
+        : "Switch to Mobile Controls";
+    });
+
+    function createEnemy() {
+      const enemy = document.createElement('div');
+      enemy.classList.add('enemy');
+      enemy.style.left = Math.floor(Math.random() * 6) * 50 + "px";
+      game.appendChild(enemy);
+
+      let enemyTop = -100;
+      const move = setInterval(() => {
+        if (!gameRunning) return clearInterval(move);
+        enemyTop += 5;
+        enemy.style.top = enemyTop + "px";
+
+        if (enemyTop > 500) {
+          clearInterval(move);
+          enemy.remove();
+          score++;
+          scoreDisplay.textContent = "Score: " + score;
+        }
+
+        // Collision detection
+        if (
+          enemyTop + 100 >= 400 &&
+          parseInt(enemy.style.left) === playerLeft
+        ) {
+          clearInterval(move);
+          gameRunning = false;
+          scoreDisplay.textContent = "Game Over! Final Score: " + score;
+        }
+      }, 30);
+    }
+
+    setInterval(() => {
+      if (gameRunning) createEnemy();
+    }, 1000);
+  </script>
+
+</body>
+</html>
